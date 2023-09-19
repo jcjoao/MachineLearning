@@ -17,7 +17,7 @@ for i in range(len(x)):
     reg = LinearRegression().fit(xcopy, ycopy)
     predy = reg.predict(testx)
     beta = reg.coef_
-    sse += (testy - predy*beta)**2 
+    sse += (testy - predy)**2 
     
 
 
