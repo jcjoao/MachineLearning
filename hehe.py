@@ -147,3 +147,10 @@ if strat == 1:
     print("The Best Method is: " + my_list[np.argmin(ssearray)])
     print("With an SSE of: " + str(min(ssearray)))
 
+    "FINAL RESULT knowing Feature Selection with Ridge is the best method"
+    xtest = np.load("X_test_regression1.npy")
+    xtest = np.delete(xtest, useless, axis=1)
+    reg = Ridge(alpha=best_alpha).fit(xgood, y)
+    ytest = reg.predict(xtest)
+    print(ytest)
+    np.save('result',ytest)
