@@ -9,7 +9,7 @@ from sklearn.linear_model import ElasticNetCV
 from sklearn.linear_model import ElasticNet
 
 
-def leave_one_out(regg):
+def leave_one_out(best_alpha, regg,x):
     sse = 0
         #Leave One Out
     for i in range(len(x)):
@@ -39,68 +39,111 @@ def leave_one_out(regg):
     return sse
 
 #Load data
-x = np.load('X.npy')
-y = np.load('Y.npy')
+x = np.load('X_train_regression1.npy')
+y = np.load('y_train_regression1.npy')
 
 # strat = 0 Manual calculation of the best alpha
-# strat = 1 Using CV functions from sklearn
-# strat = 2 Using Lasso for Feature Selection, and then Ridge
-strat = 2
-#regg = 0 linear, regg = 1 Ridge, regg = 2 Lasso, regg = 3 Elastic Net
-regg = 1
+# strat = 1 Using CV functions from sklearn, tries every method and tells the best one for our data
+strat = 1
 #Space of possible values of alpha
 alphaspace = np.logspace(-2, 2, 1000)
 
 if strat == 0:
-    if regg == 3: exit()
-    alpha_scores = np.zeros(1000)
+    alpha_scores1 = np.zeros(1000)
+    alpha_scores2 = np.zeros(1000)
     j=0
     for best_alpha in alphaspace:
-        sse = leave_one_out(regg)
-        alpha_scores[j] = sse/len(x)
+        sse1 = leave_one_out(best_alpha,regg=1,x=x)
+        sse2 = leave_one_out(best_alpha,regg=2,x=x)
+        alpha_scores1[j] = sse1/len(x)
+        alpha_scores2[j] = sse2/len(x)
         j+=1
-        
-    print("Best alpha:  " + str(alphaspace[np.where(alpha_scores == min(alpha_scores))[0][0]]))
-    print("SSE value:  " + str(min(alpha_scores)))
 
-    plt.semilogx(alphaspace, alpha_scores)
+    print("------------------------------")
+    print("Best alpha for Ridge:  " + str(alphaspace[np.where(alpha_scores1 == min(alpha_scores1))[0][0]]))
+    print("SSE value:  " + str(min(alpha_scores1)))
+
+    print("------------------------------")
+    print("Best alpha for Lasso:  " + str(alphaspace[np.where(alpha_scores2 == min(alpha_scores2))[0][0]]))
+    print("SSE value:  " + str(min(alpha_scores2)))
+
+    plt.semilogx(alphaspace, alpha_scores1)
     plt.xlabel('Alpha Values')
     plt.ylabel('Alpha Scores')
     plt.title('Alpha Evolution')
     plt.show()
 
 if strat == 1:
+    #Linear
+    sse = leave_one_out(0, regg=0,x=x)
+    print("------------------------------")
+    print("Using Normal Linear Regression")
+    print("SSE value:  " + str(sse/len(x)))
+    ssearray = np.array([sse/len(x)])
+
     #Ridge
-    if regg == 1:
-        reg = RidgeCV(alphas=alphaspace).fit(x, y)
-        best_alpha = reg.alpha_
+    reg1 = RidgeCV(alphas=alphaspace).fit(x, y)
+    best_alpha = reg1.alpha_
+
+    sse = leave_one_out(best_alpha, regg=1,x=x)
+    print("------------------------------")
+    print("Using Ridge")
+    print("Best alpha:  " + str(best_alpha))
+    print("SSE value:  " + str(sse/len(x)))
+    ssearray = np.append(ssearray,sse/len(x))
+
     #Lasso
-    if regg == 2:
-        reg = LassoCV(alphas = alphaspace, cv=15).fit(x, y.ravel())
-        best_alpha = reg.alpha_
+    reg2 = LassoCV(alphas = alphaspace, cv=15).fit(x, y.ravel())
+    best_alpha = reg2.alpha_
+
+    sse = leave_one_out(best_alpha, regg=2,x=x)
+    print("------------------------------")
+    print("Using Lasso")
+    print("Best alpha:  " + str(best_alpha))
+    print("SSE value:  " + str(sse/len(x)))
+    ssearray = np.append(ssearray,sse/len(x))
+
     #Elastic Net
-    if regg == 3:
-        reg = ElasticNetCV(alphas = alphaspace, cv=15).fit(x, y.ravel())
-        best_alpha = reg.alpha_
-        best_ratio = reg.l1_ratio_
+    reg3 = ElasticNetCV(alphas = alphaspace, cv=15).fit(x, y.ravel())
+    best_alpha = reg3.alpha_
+    best_ratio = reg3.l1_ratio_
 
-    sse = leave_one_out(regg)
-
+    sse = leave_one_out(best_alpha, regg=3,x=x)
+    print("------------------------------")
+    print("Using ElasticNet")
     print("Best alpha:  " + str(best_alpha))
+    print("Best ratio:  " + str(best_ratio))
     print("SSE value:  " + str(sse/len(x)))
+    ssearray = np.append(ssearray,sse/len(x))
 
-
-if strat == 2:
+    #Feature Selection
     reg = LassoCV(alphas = alphaspace, cv=15).fit(x, y.ravel())
-    print(reg.coef_)
+    #print(reg.coef_)
     useless = np.where(reg.coef_ == 0.0)
-    print(useless)
-    xcopy = x.copy()
-    xcopy = np.delete(xcopy, useless, axis=1)
+    #print(useless)
+    xgood = x.copy()
+    xgood = np.delete(xgood, useless, axis=1)
 
-    reg = RidgeCV(alphas=alphaspace).fit(xcopy, y)
-    best_alpha = reg.alpha_
+    #Leave one out with Linear
+    sse = leave_one_out(0,regg=0,x=xgood)
+    print("------------------------------")
+    print("Using Feature Selection and Linear")
+    print("SSE value:  " + str(sse/len(xgood)))
+    ssearray = np.append(ssearray,sse/len(xgood))
+
     #Leave one out with Ridge
-    sse = leave_one_out(1)
+    reg = RidgeCV(alphas=alphaspace).fit(xgood, y)
+    best_alpha = reg.alpha_
+    sse = leave_one_out(best_alpha,regg=1,x=xgood)
+    print("------------------------------")
+    print("Using Feature Selection and Ridge")
     print("Best alpha:  " + str(best_alpha))
-    print("SSE value:  " + str(sse/len(x)))
+    print("SSE value:  " + str(sse/len(xgood)))
+    ssearray = np.append(ssearray,sse/len(xgood))
+
+    #Tell the best one
+    print("------------------------------")
+    my_list = ["Linear", "Ridge", "Lasso", "Elastic Net", "Feature Selection with linear", "Feature Selection with Ridge"]
+    print("The Best Method is: " + my_list[np.argmin(ssearray)])
+    print("With an SSE of: " + str(min(ssearray)))
+
