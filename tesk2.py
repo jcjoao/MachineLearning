@@ -15,13 +15,14 @@ def model(x,y,type):
         alphaspace = np.logspace(-4, 3, 1000)
         #print("x is " + str(x))
         #print("y is " + str(y))
+        #print(len(x))
         return LassoCV(alphas = alphaspace, cv=len(x)).fit(x, y.ravel())
 
 #Load data
 x = np.load('X_train_regression2.npy')
 y = np.load('y_train_regression2.npy')
 
-# 1 is Linear, 2 is Ridge, 3 is Lasso
+# 0 is Linear, 1 is Ridge, 2 is Lasso
 model_type = 1
 
 cluster = 0
@@ -47,23 +48,33 @@ reg2 = model(x2,y2,model_type)
 
 for i in range(10):
     #Prediction of y1
-    pred_y1 = reg1.predict(x)
+    if model_type == 2:
+        pred_ = reg1.predict(x)
+        pred_y1 = pred_.reshape((len(x),1))
+    else:
+        pred_y1 = reg1.predict(x)
     sse1 = ((y - pred_y1)**2)
     #Prediction of y2
-    pred_y2 = reg2.predict(x)
+    if model_type == 2:
+        pred_ = reg2.predict(x)
+        pred_y2 = pred_.reshape((len(x),1))
+    else:
+        pred_y2 = reg2.predict(x)
     sse2 = ((y - pred_y2)**2)
-    #print("SSE1 " + str(np.sum(((y1 - reg1.predict(x1))**2))))
-    #print("SSE2 " + str(np.sum(((y2 - reg2.predict(x2))**2))))
+    print("SSE1 " + str(np.sum(((y1 - reg1.predict(x1))**2))))
+    print("SSE2 " + str(np.sum(((y2 - reg2.predict(x2))**2))))
     #Elements that might need to be traded
     trades = np.where(sse1 > sse2)[0]
     #print("this is x2" + str(trades))
     #Trade
     nx1 = len(x1)
     x1 = np.delete(x.copy(), trades, axis=0)
-    #print("number of traded elements =" + str(nx1 - len(x1)))
     y1 = np.delete(y.copy(), trades, axis=0)
     x2 = x[trades]
     y2 = y[trades]
+    #print("SIZE OF X1: " + str(x1.shape))
+    #print("SIZE OF X2: " + str(x2.shape))
+    #print("number of traded elements =" + str(nx1 - len(x1)))
     reg1 = model(x1,y1,model_type)
     reg2 = model(x2,y2,model_type)
 
