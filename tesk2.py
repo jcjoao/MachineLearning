@@ -1,41 +1,49 @@
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.mixture import GaussianMixture
+from sklearn.linear_model import RidgeCV
+from sklearn.linear_model import LassoCV
+from sklearn.linear_model import Lasso
+
+def model(x,y,type):
+    if type == 0:
+        return LinearRegression().fit(x, y)
+    if type == 1:
+        alphaspace = np.logspace(-4, 3, 1000)
+        return RidgeCV(alphas=alphaspace).fit(x, y)
+    if type == 2:
+        alphaspace = np.logspace(-4, 3, 1000)
+        #print("x is " + str(x))
+        #print("y is " + str(y))
+        return LassoCV(alphas = alphaspace, cv=len(x)).fit(x, y.ravel())
 
 #Load data
 x = np.load('X_train_regression2.npy')
 y = np.load('y_train_regression2.npy')
 
-cluster = True
+# 1 is Linear, 2 is Ridge, 3 is Lasso
+model_type = 1
 
-#Initial Regression
+cluster = 0
+
+#Initial Regression With Everything
 reg = LinearRegression().fit(x, y)
 pred_y = reg.predict(x)
 sse = ((y - pred_y)**2)
-#print(sse)
 
 #Remove outliers
-outliers = np.where(sse > 0.02)[0]
+outliers = np.where(sse > 0.2)[0]
 x1 = np.delete(x.copy(), outliers, axis=0)
 y1 = np.delete(y.copy(), outliers, axis=0)
 x2 = x[outliers]
 y2 = y[outliers]
 print("SIZE OF X1: " + str(x1.shape))
 print("SIZE OF X2: " + str(x2.shape))
-print(outliers)
 
-#Split the data into two sets
-n = len(x)
-split_index = n // 2
-
-x1 = x[:split_index]
-x2 = x[split_index:]
-y1 = y[:split_index]
-y2 = y[split_index:]
-
-
-reg1 = LinearRegression().fit(x1, y1)
-reg2 = LinearRegression().fit(x2, y2)
+#reg1 = LinearRegression().fit(x1, y1)
+#reg2 = LinearRegression().fit(x2, y2)
+reg1 = model(x1,y1,model_type)
+reg2 = model(x2,y2,model_type)
 
 for i in range(10):
     #Prediction of y1
@@ -44,25 +52,26 @@ for i in range(10):
     #Prediction of y2
     pred_y2 = reg2.predict(x)
     sse2 = ((y - pred_y2)**2)
-    print("SSE1 " + str(np.sum(((y1 - reg1.predict(x1))**2))))
-    print("SSE2 " + str(np.sum(((y2 - reg2.predict(x2))**2))))
+    #print("SSE1 " + str(np.sum(((y1 - reg1.predict(x1))**2))))
+    #print("SSE2 " + str(np.sum(((y2 - reg2.predict(x2))**2))))
     #Elements that might need to be traded
     trades = np.where(sse1 > sse2)[0]
-    #print(trades)
+    #print("this is x2" + str(trades))
     #Trade
     nx1 = len(x1)
     x1 = np.delete(x.copy(), trades, axis=0)
-    print("number of traded elements =" + str(nx1 - len(x1)))
+    #print("number of traded elements =" + str(nx1 - len(x1)))
     y1 = np.delete(y.copy(), trades, axis=0)
     x2 = x[trades]
     y2 = y[trades]
-    reg1 = LinearRegression().fit(x1, y1)
-    reg2 = LinearRegression().fit(x2, y2)
+    reg1 = model(x1,y1,model_type)
+    reg2 = model(x2,y2,model_type)
 
 pred_y1 = reg1.predict(x1)
 sse1 = ((y1 - pred_y1)**2)
 pred_y2 = reg2.predict(x2)
 sse2 = ((y2 - pred_y2)**2)
+print("-----------------------------")
 print("SIZE OF X1: " + str(x1.shape))
 print("SSE1 HEHE " + str(np.sum(sse1)))
 print("SIZE OF X2: " + str(x2.shape))
