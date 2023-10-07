@@ -144,11 +144,11 @@ y1_final = y[x1index_final]
 #FINAL RESULT knowing Ridge is the best
 xtest = np.load("X_test_regression2.npy")
 
-reg1 = RidgeCV(alphas=np.logspace(-1,0,1000)).fit(x1, y1)
-reg1 = Ridge(alpha=reg1.alpha_).fit(x1, y1)
+reg1 = RidgeCV(alphas=np.logspace(-1,0,1000)).fit(x1_final, y1_final)
+reg1 = Ridge(alpha=reg1.alpha_).fit(x1_final, y1_final)
 ytest1 = reg1.predict(xtest)
 
-reg2 = LinearRegression().fit(x2, y2)
+reg2 = LinearRegression().fit(x2_final, y2_final)
 ytest2 = reg2.predict(xtest)
 
 y_out = np.column_stack((ytest1,ytest2))
