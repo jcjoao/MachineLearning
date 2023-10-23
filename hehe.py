@@ -97,7 +97,7 @@ if strat == 1:
     ssearray = np.append(ssearray,sse/len(x))
 
     #Lasso
-    reg2 = LassoCV(alphas = alphaspace, cv=15).fit(x, y.ravel())
+    reg2 = LassoCV(alphas = alphaspace, cv=len(x)).fit(x, y.ravel())
     best_alpha = reg2.alpha_
 
     sse = leave_one_out(best_alpha, regg=2,x=x)
@@ -109,7 +109,7 @@ if strat == 1:
     ssearray = np.append(ssearray,sse/len(x))
 
     #Elastic Net
-    reg3 = ElasticNetCV(alphas = alphaspace, cv=15).fit(x, y.ravel())
+    reg3 = ElasticNetCV(alphas = alphaspace, cv=len(x)).fit(x, y.ravel())
     best_alpha = reg3.alpha_
     best_ratio = reg3.l1_ratio_
 
@@ -123,7 +123,7 @@ if strat == 1:
     ssearray = np.append(ssearray,sse/len(x))
 
     #Feature Selection
-    reg = LassoCV(alphas = alphaspace, cv=15).fit(x, y.ravel())
+    reg = LassoCV(alphas = alphaspace, cv=len(x)).fit(x, y.ravel())
     #print(reg.coef_)
     useless = np.where(reg.coef_ == 0.0)
     #print(useless)
@@ -150,7 +150,7 @@ if strat == 1:
     ssearray = np.append(ssearray,sse/len(xgood))
     
     #Feature Selection with Lasso
-    reg = LassoCV(alphas=alphaspace, cv=15).fit(xgood, y.ravel())
+    reg = LassoCV(alphas=alphaspace, cv=len(xgood)).fit(xgood, y.ravel())
     best_alpha_fs_lasso = reg.alpha_
     sse = leave_one_out(best_alpha_fs_lasso,regg=2,x=xgood)
     print("------------------------------")
