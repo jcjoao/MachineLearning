@@ -1,3 +1,5 @@
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import numpy as np
 import matplotlib.pyplot as plt
 from keras.models import Sequential
@@ -32,7 +34,7 @@ from keras.layers import GlobalAveragePooling2D
 # Modes:    0-MLP;    1-LogisticRegression;    2-Naive Bayes;    3-SVC;    4-Testing model       #
 mode = 0
 mode2 = 1
-oversize = '1101'  # ON/OFF --- espelhos --- cores --- rotacoes
+oversize = '0101'  # ON/OFF --- espelhos --- cores --- rotacoes
 TEST_SIZE = 0.07
 EPOCHS = 60
 EARLY_STOPPING = True
@@ -44,6 +46,22 @@ x = np.load('Xtrain_Classification1.npy')
 print(x.shape)
 y = np.load('ytrain_Classification1.npy')
 print(y.shape)
+
+##################################################################################################
+##################################################################################################
+
+# zeros = len(np.where(y == 0)[0])
+# ones = len(np.where(y == 1)[0])
+
+# print("How many 0s: ", zeros)
+# print("How many 1s: ", ones)
+# print("Total: ", zeros + ones)
+# print("Percentage of 1s: ", ones / (zeros + ones) * 100)
+# print("Percentage of 0s: ", zeros / (zeros + ones) * 100)
+
+
+##################################################################################################
+##################################################################################################
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=TEST_SIZE, random_state=42)
 
@@ -152,6 +170,8 @@ if mode==0:
 ############################################################################
 # Linear Models
 ############################################################################
+
+
 if 0<mode<4:
     scaler = StandardScaler()
     X_train = scaler.fit_transform(x_train)
@@ -206,19 +226,19 @@ if 0<mode<5:
 #   Final
 #####################################################################################
 
-x_test_final = np.load('Xtest_Classification1.npy')
-print(x_test_final.shape)
-x_test_final = (x_test_final).astype('float32')/255.0
+# x_test_final = np.load('Xtest_Classification1.npy')
+# print(x_test_final.shape)
+# x_test_final = (x_test_final).astype('float32')/255.0
 
-if mode == 0 and mode2 == 1:
-    x_test_final = x_test_final.reshape(-1, 28, 28, 3)
+# if mode == 0 and mode2 == 1:
+#     x_test_final = x_test_final.reshape(-1, 28, 28, 3)
 
-y_test_final = model.predict(x_test_final)
-y_test_final_binary = np.array([1.0 if pred >= 0.5 else 0.0 for pred in y_test_final])
+# y_test_final = model.predict(x_test_final)
+# y_test_final_binary = np.array([1.0 if pred >= 0.5 else 0.0 for pred in y_test_final])
 
-print('resultadotesk3.npy: ' +  str(y_test_final_binary))
-print(y_test_final_binary.shape)
-print("How many 0s: ", np.count_nonzero(y_test_final_binary == 0))
-print("How many 1s: ", np.count_nonzero(y_test_final_binary == 1))
+# print('resultadotesk3.npy: ' +  str(y_test_final_binary))
+# print(y_test_final_binary.shape)
+# print("How many 0s: ", np.count_nonzero(y_test_final_binary == 0))
+# print("How many 1s: ", np.count_nonzero(y_test_final_binary == 1))
 
-np.save('resultadotesk3.npy', y_test_final_binary)
+# np.save('resultadotesk3.npy', y_test_final_binary)

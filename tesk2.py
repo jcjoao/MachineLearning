@@ -7,6 +7,7 @@ from sklearn.linear_model import Ridge
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import ElasticNetCV
 from sklearn.linear_model import ElasticNet
+import matplotlib.pyplot as plt
 
 def model(x,y,type):
     if type == 0:
@@ -70,7 +71,12 @@ y2 = y[outliers]
 reg1 = model(x1,y1,model_type)
 reg2 = model(x2,y2,model_type)
 
-for i in range(10):
+size1 = [len(x1)]
+size2 = [len(x2)]
+trades_plot = []
+trades_aux = np.array([])
+
+for i in range(5):
     #Prediction of y1
     if model_type == 2:
         pred_ = reg1.predict(x)
@@ -87,17 +93,81 @@ for i in range(10):
     sse2 = ((y - pred_y2)**2)
     #Elements that might need to be traded
     trades = np.where(sse1 > sse2)[0]
+
+
+
     #Trade
     nx1 = len(x1)
     x1 = np.delete(x.copy(), trades, axis=0)
     y1 = np.delete(y.copy(), trades, axis=0)
     x2 = x[trades]
     y2 = y[trades]
+
+    # print(trades)
+    size1.append(len(x1))
+    size2.append(len(x2)) 
+    equals = len([i for i in trades if i in trades_aux])
+    trades_plot.append(len(trades) + len(trades_aux) - 2*equals)
+    trades_aux = trades.copy()
+
+
     reg1 = model(x1,y1,model_type)
     reg2 = model(x2,y2,model_type)
 
+
+
+####################################################
+
+
+size_axis = [i for i in range(len(size1))]
+
+num_ticks = 6
+x_ticks_positions = np.linspace(0, 5, num_ticks)
+x_ticks_labels = [str(int(x)) for x in x_ticks_positions]
+
+#plot size of x1 and x2
+plt.plot(size_axis,size1, color='blue')
+plt.plot(size_axis,size2, color='red')
+plt.xticks(x_ticks_positions, x_ticks_labels)
+plt.xlabel('Iteration')
+plt.ylabel('Size of the sets')
+# plt.title("Progression of the size of the sets and number of trades between them")
+plt.show()
+
+#shift x axis to the right
+trades_axis = [i+0.5 for i in range(len(trades_plot))]
+#plot number of trades
+plt.bar(trades_axis,trades_plot, color='green', width=0.35)
+plt.xlabel('Iteration')
+plt.ylabel('Number of trades')
+plt.xticks(x_ticks_positions, x_ticks_labels)
+plt.show()
+
+
+
 x1index = [i for i in range(len(x)) if x[i] in x1]
 x2index = [i for i in range(len(x)) if x[i] in x2]
+
+#plot wich points are in which division
+fp1 = [1 if x in x1index else 0 for x in range(len(x))]
+fp2 = [1 if x in x2index else 0 for x in range(len(x))]
+xaxis = [i for i in range(len(x))]
+#bar    plot
+subplot = plt.subplot(2,1,1)
+# subplot.title("Division of points")
+subplot.bar(xaxis,fp1, color='blue')
+subplot.bar(xaxis,fp2, color='red')
+ax = plt.gca()
+#hide y-axis 
+ax.get_yaxis().set_visible(False)
+# plt.title("Division of points between the sets/models")
+num_ticks = 21
+x_ticks_positions = np.linspace(0, 100, num_ticks)
+x_ticks_labels = [str(int(x)) for x in x_ticks_positions]
+plt.xticks(x_ticks_positions, x_ticks_labels)
+####################################################
+
+
 
 pred_y1 = reg1.predict(x1)
 sse1 = ((y1 - pred_y1)**2)
@@ -121,11 +191,39 @@ x_1 = x[cluster_assignments == 0]
 x_2 = x[cluster_assignments == 1]
 y_1 = y[cluster_assignments == 0]
 y_2 = y[cluster_assignments == 1]
+x_1index = np.where(cluster_assignments == 0)[0]
 x_2index = np.where(cluster_assignments == 1)[0]
 #print(x_2index)
 difference = np.setxor1d(x2index, x_2index)
 print("Diferent Points between Manual and GMM:" + str(difference))
 print("-----------------------------")
+
+
+
+########################################################
+#plot wich points are in which division
+fs1 = [1 if x in x_1index else 0 for x in range(len(x))]
+fs2 = [1 if x in x_2index else 0 for x in range(len(x))]
+xaxis = [i for i in range(len(x))]
+#bar plot
+subplot = plt.subplot(2,1,2)
+subplot.bar(xaxis,fs1, color='blue')
+subplot.bar(xaxis,fs2, color='red')
+
+ax = plt.gca()
+
+#hide y-axis 
+ax.get_yaxis().set_visible(False)
+
+########################################################
+
+
+
+plt.xticks(x_ticks_positions, x_ticks_labels)
+plt.xlabel('Sample index in input data') 
+
+plt.show()
+
 
 #-----------------------------
 #Remove different elements from x1 and x2
@@ -158,3 +256,4 @@ print(y_out)
 
 np.save('result2',y_out)
 #-----------------------------
+print(trades_plot)

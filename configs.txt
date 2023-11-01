@@ -1,0 +1,23 @@
+87.89:::83.83
+mode = 1
+modelmode = [1,1,1] # 0-MLP;  1-CNN;  2-LogisticRegression;    3-Naive Bayes;    4-SVC;   5-QDA;  -1 -Load Model; 6-Mobilenet; 7- CNN2
+oversize = '2101'  # OFF/Auto/Manual --- espelhos +2 --- cores +2 --- rotacoes +3
+TEST_SIZE = 0.10
+PACIENCE = 5
+EPOCHS = [5,25,20]
+EARLY_STOPPING = True
+downsample = 0.5
+
+ oversample(1,'0100')
+    oversample(2,'0111')
+    oversample(3,'0000')
+    oversample(4,'0100')
+    oversample(5,'0100')
+
+-----------------------------------------------------------------------------------------------------
+DA BOM SCORE NO CONJUNTO 2:
+oversample(1,'0100')
+    oversample(2,'0111')
+    oversample(3,'0000')
+    oversample(4,'0100')
+    oversample(5,'0110')

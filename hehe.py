@@ -42,9 +42,11 @@ def leave_one_out(best_alpha, regg,x):
 x = np.load('X_train_regression1.npy')
 y = np.load('y_train_regression1.npy')
 
+
+
 # strat = 0 Manual calculation of the best alpha
 # strat = 1 Using CV functions from sklearn, tries every method and tells the best one for our data
-strat = 1
+strat = 0
 #Space of possible values of alpha
 alphaspace = np.logspace(-2, 2, 1000)
 
@@ -69,10 +71,12 @@ if strat == 0:
     print("MSE value:  " + str(min(alpha_scores2)))
     print("SSE value:  " + str(min(alpha_scores2)*len(x)))
 
-    plt.semilogx(alphaspace, alpha_scores1)
+    plt.semilogx(alphaspace, alpha_scores1,label="Ridge")
+    plt.semilogx(alphaspace, alpha_scores2,label="Lasso")
+    plt.legend()
     plt.xlabel('Alpha Values')
-    plt.ylabel('Alpha Scores')
-    plt.title('Alpha Evolution')
+    plt.ylabel('MSE values')
+    plt.title('MSE vs Alpha')
     plt.show()
 
 if strat == 1:
